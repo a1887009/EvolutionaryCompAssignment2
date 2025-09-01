@@ -1,4 +1,8 @@
 name: assignment2
 channels:
   - defaults
-prefix: /Applications/anaconda3/envs/assignment2
+dependencies:
+  - numpy
+  - pandas
+  - matplotlib
+prefix: /home/kurt/anaconda3/envs/assignment2
