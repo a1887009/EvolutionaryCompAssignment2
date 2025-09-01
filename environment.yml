@@ -1,0 +1,4 @@
+name: assignment2
+channels:
+  - defaults
+prefix: /Applications/anaconda3/envs/assignment2
