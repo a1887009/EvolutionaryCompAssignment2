@@ -74,4 +74,4 @@ if __name__ == "__main__":
 
             run_mmas(problem, budget=budget, rho=rho, use_mmas_star=True)
 
-    del 1
+    del l
