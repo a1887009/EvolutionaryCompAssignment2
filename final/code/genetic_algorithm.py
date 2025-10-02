@@ -1,71 +1,58 @@
 import ioh
 import numpy as np
 import os
-import json
-from datetime import datetime
 
+def run_ga(problem, budget, rng, pop_size=50, crossover_rate=0.9, mutation_rate=0.01, verbose=False):
+    """
+    Run a binary GA with uniform crossover and bit-flip mutation on a given IOH problem.
+    Results are automatically logged to IOHanalyzer via the attached logger.
+    """
 
-def run_ga(problem_id, n, budget, seed, outdir):
-    # setup ioh problem
-    problem = ioh.get_problem(problem_id, dimension=n, instance=1)
+    n = problem.meta_data.n_variables
 
-    # reproducibility
-    rng = np.random.default_rng(seed)
-
-    # ga parameters
-    pop_size = 50
-    mutation_rate = 0.1
-    crossover_rate = 0.9
-
-    # initialise population uniformly in [-5, 5]
-    population = rng.uniform(-5, 5, size=(pop_size, n))
+    # initialise binary population
+    population = rng.integers(0, 2, size=(pop_size, n))
     fitness = np.array([problem(ind) for ind in population])
-
-    best_solution = population[np.argmin(fitness)]
-    best_fitness = np.min(fitness)
-
     evaluations = pop_size
-    history = [(evaluations, best_fitness)]
+
+    best_fitness = np.max(fitness)
 
     while evaluations < budget:
-        # parent selection (tournament)
+        # tournament selection
         parents = []
         for _ in range(pop_size):
             i, j = rng.integers(0, pop_size, 2)
-            if fitness[i] < fitness[j]:
+            if fitness[i] >= fitness[j]:
                 parents.append(population[i])
             else:
                 parents.append(population[j])
         parents = np.array(parents)
 
-        # crossover
+        # crossover (uniform)
         offspring = []
         for i in range(0, pop_size, 2):
             p1, p2 = parents[i], parents[min(i + 1, pop_size - 1)]
             if rng.random() < crossover_rate:
-                alpha = rng.random()
-                c1 = alpha * p1 + (1 - alpha) * p2
-                c2 = alpha * p2 + (1 - alpha) * p1
+                mask = rng.integers(0, 2, n)  # random 0/1 mask
+                c1 = np.where(mask, p1, p2)
+                c2 = np.where(mask, p2, p1)
             else:
-                c1, c2 = p1, p2
+                c1, c2 = p1.copy(), p2.copy()
             offspring.append(c1)
             offspring.append(c2)
         offspring = np.array(offspring)
 
-        # mutation
+        # mutation (bit-flip)
         mutation_mask = rng.random(offspring.shape) < mutation_rate
-        offspring = offspring + mutation_mask * rng.normal(0, 0.1, offspring.shape)
+        offspring = np.logical_xor(offspring, mutation_mask).astype(int)
 
-        # bound offspring within [-5, 5]
-        offspring = np.clip(offspring, -5, 5)
-
-        # evaluate
+        # evaluate offspring
         new_fitness = np.array([problem(ind) for ind in offspring])
         evaluations += len(offspring)
 
-        # elitism (keep best from previous generation)
-        best_idx = np.argmin(fitness)
-        worst_idx = np.argmax(new_fitness)
+        # elitism: keep best from old population
+        best_idx = np.argmax(fitness)
+        worst_idx = np.argmin(new_fitness)
         offspring[worst_idx] = population[best_idx]
         new_fitness[worst_idx] = fitness[best_idx]
 
@@ -74,28 +61,60 @@ def run_ga(problem_id, n, budget, seed, outdir):
         fitness = new_fitness
 
         # track best
-        gen_best_idx = np.argmin(fitness)
-        gen_best_fit = fitness[gen_best_idx]
-        if gen_best_fit < best_fitness:
-            best_solution = population[gen_best_idx]
-            best_fitness = gen_best_fit
+        gen_best = np.max(fitness)
+        if gen_best > best_fitness:
+            best_fitness = gen_best
 
-        history.append((evaluations, best_fitness))
+        # optional progress printing
+        if verbose and evaluations % (budget // 5) < pop_size:  # print ~5 updates per run
+            print(f"    Evaluations: {evaluations}/{budget}, Best fitness so far: {best_fitness}")
 
-    # save results
-    os.makedirs(outdir, exist_ok=True)
-    result = {
-        "problem_id": problem_id,
-        "dimension": n,
-        "budget": budget,
-        "seed": seed,
-        "best_solution": best_solution.tolist(),
-        "best_fitness": float(best_fitness),
-        "history": history,
-    }
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = os.path.join(outdir, f"ga_p{problem_id}_d{n}_s{seed}_{timestamp}.json")
-    with open(filename, "w") as f:
-        json.dump(result, f, indent=2)
+    # return best solution found
+    best_idx = np.argmax(fitness)
+    return population[best_idx], fitness[best_idx]
 
-    return best_solution, best_fitness
+
+def main():
+    # GA experiment settings
+    problems = [1, 2, 3, 18, 23, 24, 25]   # required PBO functions
+    n = 100                                # problem size
+    budget = 100_000                       # iterations/evaluations
+    runs = 10                              # independent runs
+
+    rng = np.random.default_rng(42)
+
+    # fixed path for assignment
+    root_dir = "/root/EVCOMP/EvolutionaryCompAssignment2/final/data/ex4/ioh_logs/GA"
+    algo_name = "GeneticAlgorithm"
+
+    os.makedirs(root_dir, exist_ok=True)
+
+    for fid in problems:
+        print(f"\n=== Running GA on Problem F{fid} (dimension={n}) ===")
+        # setup IOH problem
+        problem = ioh.get_problem(fid, dimension=n, instance=1, problem_class=ioh.ProblemClass.PBO)
+
+        # create IOH logger (stores in GA/Fxx folders)
+        l = ioh.logger.Analyzer(
+            root=root_dir,
+            folder_name=f"F{fid}",
+            algorithm_name=algo_name,
+            algorithm_info="Binary GA with uniform crossover and bit-flip mutation"
+        )
+        problem.attach_logger(l)
+
+        # run GA multiple times
+        for run in range(runs):
+            print(f"  -> Run {run+1}/{runs}")
+            seed = rng.integers(1e9)
+            run_rng = np.random.default_rng(seed)
+            problem.reset()
+            best_sol, best_fit = run_ga(problem, budget, run_rng, verbose=True)
+            print(f"     Finished Run {run+1}, Best fitness = {best_fit}")
+
+        del l   # flush data to disk
+        print(f"=== Finished all runs for Problem F{fid} ===\n")
+
+
+if __name__ == "__main__":
+    main()
