@@ -1,0 +1,9 @@
+The ACO begins from a neutral pheromone vector over all bit positions, and each run uses a distinct random seed to initialise
+the random number generator to ensure reproducibility while still allowing variations in value. In each iteration, a colony of ants constructs 
+candidate solutions by sampling each bit according to its pheromone value, after which pheromones fade and are reinforced toward 
+stronger solutions within the bounds to avoid stagnation. A lightweight 1-bit local search is applied to refine the iteration’s 
+solution, adding exploitation on top of pheromone-guided exploration. From the data collected across multiple seeds, it was observed 
+that while there is variability due to randomness, the convergence curves show rapid early gain in the beginning followed by steady improvements 
+in the fitness over time, indicating that the function inporves as it goes along. The standard deviation regions indicate that some runs 
+discover useful building blocks earlier and converge faster than others, but overall the ACO shows reliable progress compared to random search, 
+with pheromone reinforcement and local search working together to balance exploration of the search space.

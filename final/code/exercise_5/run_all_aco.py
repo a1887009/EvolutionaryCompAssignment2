@@ -6,14 +6,12 @@ def main():
     os.makedirs(outdir, exist_ok=True)
 
     # Assignment settings
-    problem_ids = [1, 2, 3, 18, 23, 24, 25]  # PBO functions
+    problem_ids = [1, 2, 3, 18, 23, 24, 25]
     dimension = 100
     budget = 100000
-    seeds = list(range(1, 11))  # 10 independent runs
-
-    # ACO hyperparameters (feel free to tune)
+    seeds = list(range(1, 11))
     ants = 20
-    rho = 1.0 / 50  # evaporation
+    rho = 1.0/50
     tau_min, tau_max = 0.01, 0.99
     use_best_so_far = True
     use_local_search = True

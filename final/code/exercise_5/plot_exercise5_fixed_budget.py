@@ -4,10 +4,6 @@ from glob import glob
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Aggregates 'history' from JSON logs and produces fixed-budget plots (mean ± 1 SD)
-# Saves PDFs under: final/code/exercise_5/data/exercise5_F{pid}.pdf
-# Reads run outputs from: final/code/exercise_5/data_aco/aco_f{pid}/*.json
-
 def load_histories(pattern: str):
     histories = []
     for fp in glob(pattern):
@@ -21,7 +17,7 @@ def load_histories(pattern: str):
             pass
     return histories
 
-def resample(histories, budget: int, step: int = 1):  # step=1 for fine resolution
+def resample(histories, budget: int, step: int = 1):
     grid = np.arange(step, budget + 1, step)
     M = []
     for hist in histories:
@@ -38,8 +34,6 @@ def resample(histories, budget: int, step: int = 1):  # step=1 for fine resoluti
 def fixed_budget_plot(pid: int, budget: int = 200, step: int = 1, outdir: str = "data"):
     series = {
         "ACO (yours)": f"data_aco/aco_f{pid}/*.json",
-        # "MMAS": f"data_mmas/mmas_f{pid}/*.json",
-        # "MMAS*": f"data_mmas_star/mmas_star_f{pid}/*.json",
     }
 
     plt.figure()
