@@ -1,0 +1,9 @@
+The GA starts with a randomly generated population of candidate solutions, with each run being controlled by a unique random
+seed, which is a number used to initialise the random number generator, making the experiments reproducible while 
+still allowing variation between runs. In each generation, tournament selection was used to choose parents. Uniform 
+crossover was then used with probability 0.9 to combine genetic information, and mutation at rate 0.1 to introduce diversity. 
+Elitism was included so that the previous gen's best solution was always preserved. From the data collected across 
+multiple seeds, it was observed that while there is variation in performance due to randomness, the average convergence 
+curves show steady logarithmic improvements in fitness over time. The standard deviation regions indicate that some runs converged
+faster than others, but overall the GA shows reliable progress compared to random search, with crossover and mutation working 
+together to balance exploration of the search space and exploitation of good solutions.
