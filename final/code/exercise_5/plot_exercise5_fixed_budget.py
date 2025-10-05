@@ -33,7 +33,7 @@ def resample(histories, budget: int, step: int = 1):
 
 def fixed_budget_plot(pid: int, budget: int = 200, step: int = 1, outdir: str = "data"):
     series = {
-        "ACO (yours)": f"data_aco/aco_f{pid}/*.json",
+        "": f"data_aco/aco_f{pid}/*.json",
     }
 
     plt.figure()
@@ -42,12 +42,12 @@ def fixed_budget_plot(pid: int, budget: int = 200, step: int = 1, outdir: str = 
         grid, mu, sd = resample(H, budget=budget, step=step)
         if mu is None:
             continue
-        plt.plot(grid, mu, label=f"{label} (mean)")
-        plt.fill_between(grid, mu - sd, mu + sd, alpha=0.2, label=f"{label} (±1 SD)")
+        plt.plot(grid, mu, label=f"{label} mean fitness")
+        plt.fill_between(grid, mu - sd, mu + sd, alpha=0.2, label=f"{label} ±1 std dev")
 
-    plt.title(f"Fixed-budget performance on F{pid}")
+    plt.title(f"ACO Convergence on F{pid}")
     plt.xlabel("Evaluations")
-    plt.ylabel("Best-so-far fitness")
+    plt.ylabel("Best Fitness")
     plt.legend()
     os.makedirs(outdir, exist_ok=True)
     plt.savefig(os.path.join(outdir, f"exercise5_F{pid}.pdf"), format="pdf", bbox_inches="tight")
