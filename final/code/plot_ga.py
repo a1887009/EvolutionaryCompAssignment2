@@ -1,66 +1,49 @@
 import os
 import json
-import numpy as np
 import matplotlib.pyplot as plt
 
-DATA_DIR = "/root/EVCOMP/EvolutionaryCompAssignment2/final/data/ex4/ioh_logs/GA"
 
-def plot_results():
-    for func_folder in sorted(os.listdir(DATA_DIR)):
-        func_path = os.path.join(DATA_DIR, func_folder)
-        if not os.path.isdir(func_path):
+def plot_results(outdir="data_ga", problems=[1, 2, 3, 18, 23, 24]):
+    for pid in problems:
+        plt.figure(figsize=(8, 6))
+
+        folder = os.path.join(outdir, f"ga_f{pid}")
+        if not os.path.exists(folder):
+            print(f"No results found for F{pid}")
             continue
 
-        json_files = [f for f in os.listdir(func_path) if f.endswith(".json")]
-        if not json_files:
-            print(f"⚠️ No JSON file in {func_folder}")
-            continue
+        has_data = False
+        for file in os.listdir(folder):
+            if file.endswith(".json"):
+                filepath = os.path.join(folder, file)
+                with open(filepath, "r") as f:
+                    data = json.load(f)
 
-        json_path = os.path.join(func_path, json_files[0])
-        try:
-            with open(json_path, "r") as f:
-                data = json.load(f)
+                if "history" not in data:
+                    print(f"Skipping {filepath}, no history field")
+                    continue
 
-            func_name = data.get("function_name", func_folder)
-            runs = data.get("scenarios", [])[0].get("runs", [])
-            if not runs:
-                print(f"⚠️ No runs in {func_name}")
-                continue
+                history = data["history"]
+                evals, fitness = zip(*history)
+                plt.plot(evals, fitness, alpha=0.7, label=f"seed={data['seed']}")
+                has_data = True
 
-            best_y = [run["best"]["y"] for run in runs if "best" in run]
-            if not best_y:
-                print(f"⚠️ No best values for {func_name}")
-                continue
-
-            # calculate stats
-            mean_y = np.mean(best_y)
-            std_y = np.std(best_y)
-
-            # plot results per run
-            plt.figure(figsize=(8, 5))
-            plt.plot(range(1, len(best_y) + 1), best_y, marker="o", linestyle="-", label="Best per run")
-            plt.axhline(mean_y, color="red", linestyle="--", label=f"Mean = {mean_y:.2f}")
-            plt.fill_between(
-                range(1, len(best_y) + 1),
-                mean_y - std_y,
-                mean_y + std_y,
-                color="red",
-                alpha=0.2,
-                label=f"±1 Std = {std_y:.2f}"
-            )
-            plt.title(f"GA Results on {func_name}")
-            plt.xlabel("Run Index")
-            plt.ylabel("Best Fitness Value")
+        if has_data:
+            plt.title(f"GA Convergence on F{pid}")
+            plt.xlabel("Evaluations")
+            plt.ylabel("Best Fitness")
+            plt.yscale("log")  # optional
+            plt.gca().invert_yaxis()  # flip y-axis so lower fitness is at top
             plt.legend()
+            plt.grid(True, linestyle="--", alpha=0.5)
             plt.tight_layout()
 
-            out_path = os.path.join(func_path, f"{func_name}_GA.pdf")
-            plt.savefig(out_path)
+            outpath = os.path.join(outdir, f"ga_f{pid}_plot.pdf")
+            plt.savefig(outpath, dpi=200)
             plt.close()
-            print(f"✅ Saved plot for {func_name} → {out_path}")
-
-        except Exception as e:
-            print(f"⚠️ Error processing {json_path}: {e}")
+            print(f"Saved plot for F{pid} -> {outpath}")
+        else:
+            print(f"No valid history data for F{pid}")
 
 
 if __name__ == "__main__":
