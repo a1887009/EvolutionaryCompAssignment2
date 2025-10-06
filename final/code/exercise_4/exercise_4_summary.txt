@@ -1,0 +1,13 @@
+Two functions MMAS and MMAS* were used for exercise 4. Then for each of these function three different pheromone values were
+used to test the performance. These values of rho were, 1, 1\sqrt(n), and 1/n. These two algorithms were then tested on seven
+different problems from the IOH website. These were F1, F2, F3, F18, F23, F24, F25. Throughout testing the MMAS and MMAS* 
+algorithms performed similarly but MMAS* more often than not achieved a better value than the MMAS function. MMAS almost
+always had a larger standard deviation than the MMAS* function. This shows MMAS had potential to reach better values than the MMAS*
+function but on average it would perform worse than MMAS*. MMAS* always had a smaller standard deviation so was consistently
+better at reaching a better final value than MMAS. Typically the prefered pheromone values were either 1/n, or 1/sqrt(n),
+with each of them performing similar often getting, on average, the same final values. However, there were some outliers to this.
+The MMAS* function for the problems, F18, F23, and F25, all performed best when the pheromone values was equal to 1. Another
+findng when analysing the graphs was that when a rho value of 1 was used the function would always start with a significantly
+higher standard deviation than the when pheromone values of 1/n, or 1/sqrt(n) were used. It would reduce as the function iterated 
+but would always be larger than the standard devaition of the other two values of rho. In summary MMAS* worked faster than MMAS 
+for these seven tests, even if it on slightly performed better.
