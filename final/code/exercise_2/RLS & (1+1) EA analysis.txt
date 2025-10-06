@@ -1,0 +1,82 @@
+(1+1) EA Algorithm Analysis
+
+The results from F1 showed a fairly standard asymptotic curve, however some runs found more difficulty finding the
+optimal solution compared to others. With a fairly tight standard deviation, there were some outliers reaching
+the optimal solution almost 200% faster than the longest runs. Inversely, some runs stretched on for hundreds more
+evaulations compared to the mean ending evaluation. 
+
+The graph of F2 shows a pretty inconsistent set of features. The mean fitness, standard deviation, and outlying runs
+all showcase a fairly erratic pattern. Despite this, the graph almost shows a more linear trend for the first 6000
+evaluations, but becomes more asymptotic as runs begin to find their optimal solution. Interestingly, the graph's
+standard deviation component shows signs of growing larger nearer to the end, potentially indicating that the
+(1+1) EA algorithm might struggle to find the optimal solution in this given dataset.
+
+F3 shows a much more compact set of results compared to F1 and F2. The mean and standard deviation are both qutie close
+to even the furthest outliers. While some runs did take significantly longer to complete, the general fitness trend stayed
+quite consistent between each run. Overall this graph displays a clear asymptotic curve, especially considering the longest
+runs stretching on to over double that of the average finish time.
+
+F18 begins to diverse in pattern, although setting the trend for future problems. These results stretched on for much higher
+evaulation counts compared to F1, F2, and F3, requiring a logorithmic scale to be incorportated to see the proper trend.
+While not crystal clear, the logarithmic curve demonstrates signs of a sigmoid curve, taking longer to begin proper fitness
+improvements in the earlier evaluations. This is then followed by a fairly rapid increase throughout the middle of the graph,
+before smoothing out a bit more at the end of the results.
+
+Problem F23 demonstrates a much clearer sigmoid curve structure, but does interestingly show a massive standard devation
+in the early evaluations. While the significantly spread fitness values early on cause a major spread in standard deviation,
+the 100 evaulations mark sees quite the reduction in spread. This is even more noticeable at the 300-400 evaulations mark,
+before nearly overlapping the mean fitness line despite stretching on for thousands more evaulations.
+
+F24 shows a similarly shaped sigmoid curve, but has a more consistent standard deviation throughout the graph. While it does
+become tighter, similar to most previous graphs, the spread at the end of the curve is quite distinct. This could be due to
+the constraints of the problem, where more budget was needed to finish the problem entirely. However, as it is the (1+1) EA
+algorithm had a mostly consistent spread all throughout the evaluations, only marginally getting closer to each other
+after nearly a thousand evaulations had passed.
+
+F25 also shows a sigmoid curve structure, but is significantly steeper in its curve. This problem did also produce results
+much deeper into the allowed budget compared to other problems, finding improvements at up to 15,000-20,000 evaluations deep.
+The standard deviation of this graph is also quite significantly compact all throughout the graph. One of the main differences
+between F25 and F18, F23, and F24 is that there also appears to be another minor inflection near the end of the graph.
+This may just be a case of random chance however, and recording more runs may flatten this anomaly out.
+
+RLS algorithm analysis
+
+The graph of F1 shows a standard asymptotic curve, although it does have a marginarlly tighter standard deviation component
+compared to the F1 graph of (1+1) EA. It also displays more consistent improvements early on, along with taking approximately
+60% of the evaluations to find the optimal solution.
+
+F2 might be considered slightly more linear compared to the F2 graph of (1+1) EA, although the runs that make up this graph
+are also quite inconsistent. They vary a lot more all throughout the graph compared to other cases that have early spread,
+but get reduced as the evaluation count rises.
+
+The graph of F3, while containing a fairly compact standard deviation, is slightly less tight compared to the F3 graph from
+(1+1) EA. This could suggest that the data of F3 is less suited for RLS's method of finding improvements, although RLS did
+manage to find the optimal solution for all runs faster than (1+1) EA.
+
+F18 was once again quite different to the previous three graphs. While showing hints at a sigmoid curve structure, the data
+was all quite sporadic, making any discernible structure difficult to identify. Compared to (1+1) EA, RLS did manage to reach
+similar levels of fitness at a significantly low fraction of the evaulations. 
+
+The graph of F23 also showed an abnormally large standard deviation spread in the early evaluations. The mean fitness line
+on this graph resembles that of a sigmoid curve to much better degree, but did take a proportionally longer time to smooth
+out the curve near the top. As has been consistent throughout previous RLS graphs, F23 was also completed much earlier than 
+that of (1+1) EA's F23 graph, however this lead to a larger proportion of the evaluations having a significant standard
+deviation spread. 
+
+F24 held a fairly consistent standard deviation spread throughout the entire graph, along with a clear sigmoid curve structure.
+This graph did have some bigger outliers than most others, slightly influencing the middle component of the graph.
+Similar to (1+1) EA's F24 graph, the standard deviatin did not close in near the end of the graph either.
+
+F25 almost resembled F23 in shape for the standard deviation, however it was not nearly as pronounced and instead reduced the
+high spread found early on. The runs that RLS produced for F25 were quite different in fitness early on, but converged into
+each other near the 100 evaluation mark.
+
+Comparison and Summary
+
+Due to the nature of RLS, it had a lot more minor improvements all throughout the graphs compared to (1+1) EA.
+The best example of this would be the results of F1, where RLS had a lot of back to back improvements, almost resembling a
+staircase in shape. The (1+1) EA did occasionally find a lot of minor improvements as well, but often more spread out and
+taking a few extra evaluations in between. These minor improvements may have been the leading cause to allow RLS to
+consistently outperform (1+1) EA in fitness growth, generally taking a much lower fraction of evaluations to garner similar
+results.
+

@@ -32,7 +32,7 @@ def randomized_local_search(func, budget=99999):
             if f_best >= optimum:
                 break
 
-        # Only reset **between runs**
+        # Only reset between runs
         if run < 9:
             func.reset()
 
