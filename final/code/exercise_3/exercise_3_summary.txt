@@ -6,4 +6,10 @@ Elitism was included so that the previous gen's best solution was always preserv
 multiple seeds, it was observed that while there is variation in performance due to randomness, the average convergence 
 curves show steady logarithmic improvements in fitness over time. The standard deviation regions indicate that some runs converged
 faster than others, but overall the GA shows reliable progress compared to random search, with crossover and mutation working 
-together to balance exploration of the search space and exploitation of good solutions.
+together to balance exploration of the search space and exploitation of good solutions. The reason for this faster convergence
+is mainly due to the inherent randomness in the GA. Despite all runs using the same parameters, each run starts with
+a different initial population because of a different random seed. This means some populations are luckier and already contain 
+individuals closer to the optimal solution. Additionally, random outcomes in mutation and uniform crossover can occasionally produce better 
+solutions earlier in some runs, and tournament selection introduces stochasticity in which individuals become parents. Finally, depending 
+on where the initial population lies in the problem landscape, some runs may start in regions that are easier to optimise, resulting in 
+faster convergence. 
