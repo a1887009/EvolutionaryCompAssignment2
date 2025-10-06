@@ -5,12 +5,13 @@ from genetic_algorithm import run_ga
 def main():
     outdir = "data_ga"
 
-    # only valid REAL problems
+    # define problems, dimension, budget, seeds, same settings as Exercise 2
     problem_ids = [1, 2, 3, 18, 23, 24]
     dimension = 10
     budget = 10000
     seeds = [1, 2, 3, 4, 5]
 
+    # ensure output directory exists
     for pid in problem_ids:
         print(f"Running GA on F{pid} ...")
         for seed in seeds:

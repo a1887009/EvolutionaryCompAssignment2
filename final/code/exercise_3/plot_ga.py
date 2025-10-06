@@ -3,7 +3,7 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 
-
+# function to plot results from multiple GA runs on specified problems
 def plot_results(outdir="data_ga", problems=[1, 2, 3, 18, 23, 24]):
     for pid in problems:
         folder = os.path.join(outdir, f"ga_f{pid}")
@@ -22,7 +22,7 @@ def plot_results(outdir="data_ga", problems=[1, 2, 3, 18, 23, 24]):
 
                 if "history" not in data:
                     print(f"Skipping {filepath}, no history field")
-                    continue
+                    continue # error handling
 
                 history = data["history"]
                 evals, fitness = zip(*history)
@@ -36,7 +36,7 @@ def plot_results(outdir="data_ga", problems=[1, 2, 3, 18, 23, 24]):
         all_histories = np.array(all_histories)  # shape: (num_seeds, num_evals)
         evals = np.arange(1, all_histories.shape[1]+1)  # assumes all histories same length
 
-        # compute mean and std
+        # compute mean and std deviation across seeds
         mean_fitness = np.mean(all_histories, axis=0)
         std_fitness = np.std(all_histories, axis=0)
 
@@ -45,7 +45,7 @@ def plot_results(outdir="data_ga", problems=[1, 2, 3, 18, 23, 24]):
         for seed_idx in range(all_histories.shape[0]):
             plt.plot(evals, all_histories[seed_idx], color='gray', alpha=0.3)
 
-        # plot mean and std
+        # plot mean and std deviation
         plt.plot(evals, mean_fitness, color='blue', label="Mean fitness", linewidth=2)
         plt.fill_between(evals,
                          mean_fitness - std_fitness,
@@ -54,12 +54,12 @@ def plot_results(outdir="data_ga", problems=[1, 2, 3, 18, 23, 24]):
                          alpha=0.2,
                          label="±1 std dev")
 
-        # formatting
+        # formatting and axis titles
         plt.title(f"GA Convergence on F{pid}")
         plt.xlabel("Evaluations")
         plt.ylabel("Best Fitness")
-        plt.yscale("linear")  # descriptive numbers instead of 10^x
-        plt.gca().invert_yaxis()  # lower fitness at top
+        plt.yscale("linear") 
+        plt.gca().invert_yaxis()  # lower fitness at top (otherwise would be downwards curve, purely aesthetic)
         plt.grid(True, linestyle="--", alpha=0.5)
         plt.legend()
         plt.tight_layout()
@@ -69,6 +69,6 @@ def plot_results(outdir="data_ga", problems=[1, 2, 3, 18, 23, 24]):
         plt.close()
         print(f"Saved plot for F{pid} -> {outpath}")
 
-
+# plot when run as script
 if __name__ == "__main__":
     plot_results()
