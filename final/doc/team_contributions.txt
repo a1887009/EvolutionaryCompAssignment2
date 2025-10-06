@@ -7,4 +7,4 @@ Tommy Pham (a1889846)
 2. Implemented run_all_ACO to run the custom ACO and display data
 3. Made a plotting code to plot the data
 4. edited the ACO algorithm to imporve the fitness and standard deviation.
-5. 
+5. implementing greedy 1bit local search to helps accelerate progress on unimodal functions
