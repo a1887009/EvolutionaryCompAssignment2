@@ -17,4 +17,11 @@ Matt Edmonds-Wilson (a1850372)
 6. Made the proof for the RLS & (1+1) EA
 
 Patrick Chapman (a1889461)
+
 1. Completed exercise 4
+
+Manith Kandanearachchi (a1886664)
+1. Completed exercise 3:
+2. Implemented GA algorithm using crossover and mutation
+3. Generated graphs for each function and analysed results
+4. Optimised algorithm to use Tournament Selection to improve fitness values
