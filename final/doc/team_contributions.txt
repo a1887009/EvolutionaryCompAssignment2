@@ -1,10 +1,17 @@
 Kurt Brice (a1887009)
 1. Completed Exercise 1
 
-
 Tommy Pham (a1889846)
 1. Implemented ACO_customs
 2. Implemented run_all_ACO to run the custom ACO and display data
 3. Made a plotting code to plot the data
 4. edited the ACO algorithm to imporve the fitness and standard deviation.
 5. implementing greedy 1bit local search to helps accelerate progress on unimodal functions
+
+Matt Edmonds-Wilson (a1850372)
+1. Completed exercise 2:
+2. Implemented RLS algortihm
+3. Implemented (1+1) EA algorithm
+4. Generated graphs for each function
+5. Made the proof for the Random Search
+6. Made the proof for the RLS & (1+1) EA
