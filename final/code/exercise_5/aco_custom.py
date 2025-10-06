@@ -2,10 +2,7 @@ import os
 import json
 from datetime import datetime
 from typing import Tuple, Optional
-try:
-    import ioh
-except Exception:
-    ioh = None
+import ioh
 import numpy as np
 
 def _get_pbo_problem(problem_id: int, n: int, instance: int = 1):
