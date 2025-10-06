@@ -15,3 +15,6 @@ Matt Edmonds-Wilson (a1850372)
 4. Generated graphs for each function
 5. Made the proof for the Random Search
 6. Made the proof for the RLS & (1+1) EA
+
+Patrick Chapman (a1889461)
+1. Completed exercise 4
