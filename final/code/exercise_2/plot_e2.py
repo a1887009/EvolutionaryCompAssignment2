@@ -1,75 +1,123 @@
 import os
-import json
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Does not currently work, need to figure out why
-# I assume an issue with finding the path to the files
+def load_dat_file(filepath):
+    """Load evaluations and raw_y values from an IOHprofiler .dat file."""
+    runs = []
+    current_evals, current_fitness = [], []
+    with open(filepath, "r") as f:
+        for line in f:
+            if line.startswith("evaluations") or line.strip() == "":
+                if current_evals and current_fitness:
+                    runs.append((np.array(current_evals), np.array(current_fitness)))
+                    current_evals, current_fitness = [], []
+                continue
+            parts = line.strip().split()
+            if len(parts) >= 2:
+                current_evals.append(float(parts[0]))
+                current_fitness.append(float(parts[1]))
+    if current_evals and current_fitness:
+        runs.append((np.array(current_evals), np.array(current_fitness)))
+    return runs
 
-def plot_results(outdir="data_e2", problems=[1, 2, 3, 18, 23, 24]):
-    for pid in problems:
-        folder = os.path.join(outdir, f"ga_f{pid}")
-        if not os.path.exists(folder):
-            print(f"No results found for F{pid}")
+
+def compute_mean_std(runs, num_points=1000):
+    """Interpolate best-so-far runs to common x-axis and compute mean/std."""
+    if not runs:
+        return None, None, None
+
+    # Use full range across all runs
+    min_eval = min(run[0][0] for run in runs)
+    max_eval = max(run[0][-1] for run in runs)
+    x_common = np.linspace(min_eval, max_eval, num_points)
+
+    interp_runs = []
+    for evals, fitness in runs:
+        # ensure best-so-far (monotone non-decreasing) fitness
+        fitness = np.maximum.accumulate(fitness)
+        interp = np.interp(x_common, evals, fitness, left=fitness[0], right=fitness[-1])
+        interp_runs.append(interp)
+
+    interp_runs = np.array(interp_runs)
+    mean_fitness = np.mean(interp_runs, axis=0)
+    std_fitness = np.std(interp_runs, axis=0)
+    return x_common, mean_fitness, std_fitness
+
+
+def plot_results(outdir="data_e2", problems=[1, 2, 3, 18, 23, 24, 25]):
+    methods = ["exercise2_1P1_EA", "exercise2_RLS"]
+    log_scale_problems = [18, 23, 24, 25]
+
+    for method in methods:
+        method_path = os.path.join(outdir, method)
+        if not os.path.exists(method_path):
+            print(f"Missing folder: {method_path}")
             continue
 
-        all_histories = []
+        print(f"\n📊 Plotting results for {method}")
 
-        # load all histories for this problem
-        for file in os.listdir(folder):
-            if file.endswith(".json"):
-                filepath = os.path.join(folder, file)
-                with open(filepath, "r") as f:
-                    data = json.load(f)
+        for pid in problems:
+            plt.figure(figsize=(8, 6))
 
-                if "history" not in data:
-                    print(f"Skipping {filepath}, no history field")
-                    continue
+            # find folder
+            folder = None
+            for name in os.listdir(method_path):
+                if name.startswith(f"data_f{pid}_"):
+                    folder = os.path.join(method_path, name)
+                    break
+            if folder is None:
+                print(f"No data folder for F{pid} in {method_path}")
+                plt.close()
+                continue
 
-                history = data["history"]
-                evals, fitness = zip(*history)
-                all_histories.append(fitness)
+            # find .dat file
+            dat_file = None
+            for name in os.listdir(folder):
+                if name.endswith(".dat"):
+                    dat_file = os.path.join(folder, name)
+                    break
+            if dat_file is None:
+                print(f"No .dat file for F{pid} in {folder}")
+                plt.close()
+                continue
 
-        if not all_histories:
-            print(f"No valid history data for F{pid}")
-            continue
+            runs = load_dat_file(dat_file)
+            if not runs:
+                print(f"Empty data in {dat_file}")
+                plt.close()
+                continue
 
-        # convert to numpy array for easy processing
-        all_histories = np.array(all_histories)  # shape: (num_seeds, num_evals)
-        evals = np.arange(1, all_histories.shape[1]+1)  # assumes all histories same length
+            # Plot individual runs faintly
+            for evals, fitness in runs:
+                fitness = np.maximum.accumulate(fitness)
+                plt.step(evals, fitness, where='post', linewidth=1, alpha=0.4, color="gray")
 
-        # compute mean and std
-        mean_fitness = np.mean(all_histories, axis=0)
-        std_fitness = np.std(all_histories, axis=0)
+            # Compute mean ± std and plot as step function
+            x_common, mean_fitness, std_fitness = compute_mean_std(runs)
+            if x_common is not None:
+                plt.step(x_common, mean_fitness, where='post', color='blue', linewidth=2, label="Mean fitness")
+                plt.fill_between(x_common,
+                                 mean_fitness - std_fitness,
+                                 mean_fitness + std_fitness,
+                                 step='post', color='blue', alpha=0.2, label="±1 Std. Dev.")
 
-        # plot individual seeds
-        plt.figure(figsize=(8, 6))
-        for seed_idx in range(all_histories.shape[0]):
-            plt.plot(evals, all_histories[seed_idx], color='gray', alpha=0.3)
+            plt.title(f"{method} — Convergence on F{pid}")
+            plt.xlabel("Evaluations")
+            plt.ylabel("Best Fitness")
+            plt.legend()
+            plt.grid(True, linestyle="--", alpha=0.5)
 
-        # plot mean and std
-        plt.plot(evals, mean_fitness, color='blue', label="Mean fitness", linewidth=2)
-        plt.fill_between(evals,
-                         mean_fitness - std_fitness,
-                         mean_fitness + std_fitness,
-                         color='blue',
-                         alpha=0.2,
-                         label="±1 std dev")
+            # Apply log scale if needed
+            if pid in log_scale_problems:
+                plt.xscale('log')
 
-        # formatting
-        plt.title(f"GA Convergence on F{pid}")
-        plt.xlabel("Evaluations")
-        plt.ylabel("Best Fitness")
-        plt.yscale("linear")  # descriptive numbers instead of 10^x
-        plt.gca().invert_yaxis()  # lower fitness at top
-        plt.grid(True, linestyle="--", alpha=0.5)
-        plt.legend()
-        plt.tight_layout()
+            plt.tight_layout()
+            outpath = os.path.join(outdir, f"{method}_F{pid}.pdf")
+            plt.savefig(outpath, dpi=200)
+            plt.close()
+            print(f"✅ Saved plot for {method} F{pid} -> {outpath}")
 
-        outpath = os.path.join(outdir, f"ga_f{pid}_plot.pdf")
-        plt.savefig(outpath, dpi=200)
-        plt.close()
-        print(f"Saved plot for F{pid} -> {outpath}")
 
 
 if __name__ == "__main__":
