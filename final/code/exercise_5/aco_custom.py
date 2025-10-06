@@ -40,12 +40,15 @@ def _get_pbo_problem(problem_id: int, n: int, instance: int = 1):
         pass
     raise RuntimeError(f"Unable to load PBO problem id={problem_id}. Tried multiple loaders.")
 
+# Ensures the output directory exists 
 def _ensure_dir(path: str):
     os.makedirs(path, exist_ok=True)
 
+# Evaluates the problem with a given binary solution
 def _evaluate(problem, x: np.ndarray) -> float:
     return float(problem(x))
 
+ # Performs a greedy 1-bit local search to improve the solution of a binary problem
 def greedy_1bit_local_search(problem, x: np.ndarray, max_evals: Optional[int] = None) -> Tuple[np.ndarray, float, int]:
     f0 = _evaluate(problem, x)
     n = x.size
@@ -53,6 +56,8 @@ def greedy_1bit_local_search(problem, x: np.ndarray, max_evals: Optional[int] = 
     best_i = -1
     evals_used = 1
     budget_left = (max_evals - evals_used) if max_evals is not None else n
+
+    # try flipping each bit and see if it improves the solution
     for i in range(n):
         if max_evals is not None and budget_left <= 0:
             break
@@ -64,29 +69,33 @@ def greedy_1bit_local_search(problem, x: np.ndarray, max_evals: Optional[int] = 
         if fi > best_f:
             best_f, best_i = fi, i
         x[i] ^= 1
+    # if an improvement was found, apply it
     if best_i >= 0:
         x[best_i] ^= 1
         return x, best_f, evals_used
     return x, f0, evals_used
 
+# Ranks weights for the top mu solutions in ACO based on logarithmic scaling 
 def _rank_weights(mu: int):
     ranks = np.arange(1, mu + 1)
     w = np.log(mu + 1.0) - np.log(ranks)
     w /= w.sum()
     return w
 
+# this computes the hamming distance between two binary vectors 
 def _hamming(a: np.ndarray, b: np.ndarray) -> int:
     return int(np.sum(a ^ b))
 
+# This selects a diverse set of elite solutions based on the hamming distance
 def _select_diverse_elites(X: np.ndarray, F: np.ndarray, mu: int, d_min: int) -> np.ndarray:
     order = np.argsort(-F)
     selected = []
-    for idx in order:
+    for idx in order: # iterate in order of fitness
         if not selected:
             selected.append(idx)
         else:
             ok = True
-            for j in selected:
+            for j in selected: # checks if hamming distance to already selected elites is above threshold
                 if _hamming(X[idx], X[j]) < d_min:
                     ok = False
                     break
@@ -102,6 +111,7 @@ def _select_diverse_elites(X: np.ndarray, F: np.ndarray, mu: int, d_min: int) ->
                     break
     return np.array(selected[:mu], dtype=int)
 
+# this generates a Latin Hypercube Sample matrix for the bernoulli trials based on pheromone levels
 def _lhs_bernoulli_matrix(tau: np.ndarray, ants: int, rng: np.random.Generator) -> np.ndarray:
     n = tau.size
     X = np.empty((ants, n), dtype=int)
@@ -111,13 +121,15 @@ def _lhs_bernoulli_matrix(tau: np.ndarray, ants: int, rng: np.random.Generator) 
         X[:, j] = (strata < tau[j]).astype(int)
     return X
 
+# The main ACO algorithm function
 def run_aco(
+    # parameters section
     problem_id: int,
     n: int = 100,
     budget: int = 100_000,
     seed: int = 1,
     outdir: str = ".",
-    ants: int = 20,
+    ants: int = 20, # number of ants per iteration
     rho: float = 1.0 / 50.0,
     tau_min: Optional[float] = None,
     tau_max: Optional[float] = None,
@@ -131,11 +143,14 @@ def run_aco(
     max_step_frac: float = 0.08,
     entropy_adapt_mu: bool = True,
 ):
+    # setup and checks
     _ensure_dir(outdir)
+    # if ioh is not available, raise an error
     if ioh is None:
         raise RuntimeError("ioh not available")
     problem = _get_pbo_problem(problem_id, n, instance=1)
     rng = np.random.default_rng(seed)
+    # parameter checks
     if tau_min is None:
         tau_min = 1.0 / (2.0 * n)
     if tau_max is None:
@@ -158,6 +173,9 @@ def run_aco(
     F = np.empty(ants, dtype=float)
     d_min = max(1, int(elite_dmin_frac * n))
     step_cap = max_step_frac * (tau_max - tau_min)
+
+    # while loop until the budget is exhausted
+    # at each iteration, ants sample solutions are based on thepheromone levels
     while evals < budget:
         if sampling == "lhs":
             X = _lhs_bernoulli_matrix(tau, ants, rng)
@@ -168,7 +186,7 @@ def run_aco(
             X[half:2 * half] = ((1.0 - U) < tau).astype(int)
             if 2 * half < ants:
                 X[-1] = (rng.random(n) < tau).astype(int)
-        for a in range(ants):
+        for a in range(ants): # this evaluates each ant's solution
             if evals >= budget:
                 break
             fx = _evaluate(problem, X[a])
@@ -206,7 +224,7 @@ def run_aco(
         k = max(2, int(np.ceil(mu_eff * (1.0 - trim_frac))))
         elite_idx = elite_idx_full[:k]
         tau_work = tau_evap.copy()
-        for rank, idx in enumerate(elite_idx):
+        for rank, idx in enumerate(elite_idx): # this deposits the pheromone from elite solutions
             tau_work = deposit(tau_work, X[idx], amount=rho_eff * w[rank if rank < w.size else -1])
         if bsf_weight > 0.0:
             tau_work = deposit(tau_work, best_x, amount=bsf_weight)
@@ -223,6 +241,7 @@ def run_aco(
                 tau[idx] = 0.5
             no_imp_iters = 0
         history.append((evals, float(best_f)))
+    # this section saves the result to a json file
     result = {
         "algorithm": "ACO-VarianceReduced(LHS+Trim+Cap)+diversity+adaptive",
         "problem_id": problem_id,

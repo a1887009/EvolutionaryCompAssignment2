@@ -24,7 +24,9 @@ def _align_on_grid(runs):
         aligned.append(fit_on_grid)
     return grid, np.vstack(aligned)
 
+# Main plotting function
 def plot_aco_results(outdir="data_aco", problems=[1, 2, 3, 18, 23, 24, 25]):
+    # this ensures output directory exists for plots
     for pid in problems:
         folder = os.path.join(outdir, f"aco_f{pid}")
         if not os.path.exists(folder):
@@ -32,6 +34,7 @@ def plot_aco_results(outdir="data_aco", problems=[1, 2, 3, 18, 23, 24, 25]):
             continue
 
         runs = _load_histories(folder)
+        # if no valid runs, skip
         if not runs:
             print(f"No valid history data for F{pid}")
             continue

@@ -2,6 +2,7 @@ import os
 import numpy as np
 from aco_custom import run_aco
 
+# Main function to run ACO on multiple problems and seeds
 def main():
     outdir = "data_aco"
     os.makedirs(outdir, exist_ok=True)
